@@ -18,7 +18,7 @@ const validate = (schema) => (req, res, next) => {
     // If validation fails, return 400 Bad Request with user-friendly error details
     const issues =
       (error instanceof ZodError ? error.issues : error?.errors) || [];
-console.log(issues);
+
 
     const details = issues.map((issue) => ({
       path: Array.isArray(issue.path) ? issue.path.join('.') : String(issue.path),
