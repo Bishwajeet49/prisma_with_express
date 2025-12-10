@@ -2,6 +2,8 @@
  * Middleware to validate request data against a Zod schema.
  * @param {Object} schema - The Zod schema to validate against (can include body, query, params).
  */
+const { ZodError } = require('zod');
+
 const validate = (schema) => (req, res, next) => {
   try {
     // Validate request against schema
@@ -13,11 +15,21 @@ const validate = (schema) => (req, res, next) => {
     });
     next();
   } catch (error) {
-    // If validation fails, return 400 Bad Request with error details
+    // If validation fails, return 400 Bad Request with user-friendly error details
+    const issues =
+      (error instanceof ZodError ? error.issues : error?.errors) || [];
+console.log(issues);
+
+    const details = issues.map((issue) => ({
+      path: Array.isArray(issue.path) ? issue.path.join('.') : String(issue.path),
+      message: issue.message,
+      code: issue.code,
+    }));
+
     return res.status(400).json({
       status: 'error',
-      message: 'Validation failed',
-      errors: error.errors,
+      message: details[0]?.message || 'Validation failed',
+      errors: details,
     });
   }
 };
